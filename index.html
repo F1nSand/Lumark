@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' app:; script-src 'self' app:; style-src 'self' 'unsafe-inline' app:; font-src 'self' app: data:; img-src 'self' app: data:; connect-src 'self' app:">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumark</title>
+  <link rel="stylesheet" href="./build/renderer/renderer.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <!-- 顶部工具栏 -->
+    <header class="toolbar" id="toolbar" hidden>
+      <div class="toolbar__group">
+        <button class="toolbar__btn" data-cmd="bold" title="粗体 (Ctrl+B)"><b>B</b></button>
+        <button class="toolbar__btn" data-cmd="italic" title="斜体 (Ctrl+I)"><i>I</i></button>
+        <button class="toolbar__btn" data-cmd="heading" title="标题">H</button>
+        <span class="toolbar__sep"></span>
+        <button class="toolbar__btn" data-cmd="ul" title="无序列表">•≡</button>
+        <button class="toolbar__btn" data-cmd="ol" title="有序列表">1≡</button>
+        <button class="toolbar__btn" data-cmd="quote" title="引用">❝</button>
+        <span class="toolbar__sep"></span>
+        <button class="toolbar__btn" data-cmd="code" title="代码块">&lt;/&gt;</button>
+        <button class="toolbar__btn" data-cmd="table" title="表格">▦</button>
+        <button class="toolbar__btn" data-cmd="math" title="公式">Σ</button>
+        <button class="toolbar__btn" data-cmd="mermaid" title="图表">◮</button>
+      </div>
+      <div class="toolbar__spacer"></div>
+      <div class="toolbar__group">
+        <span class="toolbar__file" id="file-breadcrumb" title=""></span>
+        <button class="toolbar__btn" data-cmd="theme" title="切换主题 (Ctrl+T)">◐</button>
+        <button class="toolbar__btn" id="mode-btn" data-cmd="mode" title="切换编辑/阅读模式 (Ctrl+E)">✎</button>
+      </div>
+    </header>
+
+    <!-- 主体：左栏（大纲 + 文件树）+ 内容区 -->
+    <div class="layout">
+      <aside class="sidebar" id="left-panel">
+        <!-- 大纲区 -->
+        <section class="panel panel--outline" id="outline-panel">
+          <div class="panel__header">
+            <span class="panel__title">大纲</span>
+            <button class="panel__toggle" id="btn-toggle-outline" title="收起大纲">▾</button>
+          </div>
+          <div class="panel__collapse">
+            <div class="panel__body" id="outline"></div>
+          </div>
+        </section>
+
+        <!-- 文件树区 -->
+        <section class="panel panel--tree" id="filetree-panel">
+          <div class="panel__header">
+            <span class="panel__title">文件</span>
+            <button class="panel__action" id="btn-open-folder" title="打开文件夹">📂</button>
+            <button class="panel__action" id="btn-open-file" title="打开 Markdown 文件">📄</button>
+            <button class="panel__action" id="btn-collapse-tree" title="收起全部">–</button>
+            <button class="panel__toggle" id="btn-toggle-tree" title="收起文件树">▾</button>
+          </div>
+          <div class="panel__collapse">
+            <div class="panel__body filetree" id="filetree"></div>
+          </div>
+        </section>
+      </aside>
+
+      <!-- 中间：内容区 -->
+      <main class="content-wrap" id="content-wrap">
+        <article class="content" id="content" contenteditable="false"></article>
+      </main>
+    </div>
+
+    <!-- 空状态 -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-state__inner">
+        <div class="empty-state__logo">L</div>
+        <h2>Lumark</h2>
+        <p>按 <kbd>Ctrl+O</kbd> 打开目录，或直接拖入 Markdown 文件 / 文件夹。</p>
+        <div class="empty-state__actions">
+          <button id="btn-empty-open" class="btn-primary">打开文件夹</button>
+          <button id="btn-empty-open-file" class="btn">打开文件…</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 弹层容器 -->
+    <div class="modal-mask" id="modal-mask" hidden>
+      <div class="modal" id="modal">
+        <div class="modal__header">
+          <span id="modal-title">编辑</span>
+          <button class="modal__close" id="modal-close">×</button>
+        </div>
+        <div class="modal__body">
+          <textarea id="modal-textarea" spellcheck="false"></textarea>
+        </div>
+        <div class="modal__footer">
+          <span class="modal__hint" id="modal-hint"></span>
+          <span class="modal__spacer"></span>
+          <button class="btn" id="modal-cancel">取消</button>
+          <button class="btn-primary" id="modal-ok">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 拖拽遮罩 -->
+    <div class="drop-overlay" id="drop-overlay" hidden>
+      <div class="drop-overlay__hint">松开以打开 Markdown 文件或文件夹</div>
+    </div>
+
+    <!-- toast 容器 -->
+    <div class="toast-container" id="toasts"></div>
+
+    <script type="module" src="./build/renderer/renderer.js"></script>
+  </div>
+</body>
+</html>

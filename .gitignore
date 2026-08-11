@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+release/
+*.log
+
+# 内部分析文档（不提交到 GitHub）
+progress.md
+项目结构与代码分析.md
+性能优化方案.md
+内存分析报告.md

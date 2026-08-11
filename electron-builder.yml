@@ -1,0 +1,25 @@
+appId: com.lumark.app
+productName: Lumark
+directories:
+  buildResources: build
+  output: release
+files:
+  - main.js
+  - preload.js
+  - index.html
+  - build/**/*
+  - package.json
+  - '!node_modules/**/*'
+  - '!**/*.map'
+asar: true
+npmRebuild: false
+win:
+  icon: build/icon.ico
+  target:
+    - target: portable
+      arch:
+        - x64
+portable:
+  artifactName: Lumark-${version}-${arch}.exe
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/

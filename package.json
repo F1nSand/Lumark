@@ -1,0 +1,36 @@
+{
+  "name": "lumark",
+  "productName": "Lumark",
+  "version": "0.1.0",
+  "description": "Lumark — a Typora-style Markdown reader/editor built with Electron",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "start": "npm run build && electron .",
+    "pack": "npm run build && electron-builder --win portable",
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "katex": "^0.18.3",
+    "markdown-it": "^15.0.0",
+    "markdown-it-emoji": "^3.1.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "markdown-it-texmath": "^1.0.0",
+    "mermaid": "^11.16.1",
+    "shiki": "^4.4.3",
+    "turndown": "^7.2.4",
+    "turndown-plugin-gfm": "^1.0.2"
+  },
+  "devDependencies": {
+    "electron": "^43.3.0",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.28.2",
+    "jsdom": "^30.0.1"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}
