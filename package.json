@@ -1,8 +1,8 @@
 {
   "name": "lumark",
   "productName": "Lumark",
-  "version": "0.1.0",
-  "description": "Lumark — a Typora-style Markdown reader/editor built with Electron",
+  "version": "0.1.1",
+  "description": "Lumark",
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
