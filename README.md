@@ -32,6 +32,3 @@ npm run pack       # 打包 Windows 便携版
 
 Electron · esbuild · markdown-it · Shiki · KaTeX · Mermaid
 
-## License
-
-MIT

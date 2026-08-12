@@ -183,14 +183,17 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-// markdown-it parser 单例：模块加载时构建并注册插件/规则，避免每次渲染重建
-const mdit = new MarkdownIt({
-  html: false,
-  linkify: true,
-  typographer: true,
-});
+// markdown-it parser 单例：首次渲染时才构建并注册插件/规则（避免冷启动同步开销）
+let mdit = null;
+function getMarkdownIt() {
+  if (mdit) return mdit;
+  mdit = new MarkdownIt({
+    html: false,
+    linkify: true,
+    typographer: true,
+  });
 
-{
+  {
   // ---- 数学：KaTeX ----
   mdit.use(texmath, {
     engine: katex,
@@ -309,11 +312,15 @@ const mdit = new MarkdownIt({
     );
   };
 
+  }
+
+  return mdit;
 }
 
 // 渲染入口：异步预高亮代码 fence，再同步 render（其余规则不受影响）
 // 双主题 CSS 变量（defaultColor:false）→ 切主题只改 CSS，无需重渲染
 export async function renderMarkdown(md) {
+  const mdit = getMarkdownIt();
   const env = {}; // headingSeen/headingFallback 由 headingId 惰性初始化，每次渲染独立（避免并发竞态）
   const tokens = mdit.parse(md, env);
 

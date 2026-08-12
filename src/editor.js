@@ -15,7 +15,12 @@ const toolbar = () => document.getElementById('toolbar');
 const emptyState = () => document.getElementById('empty-state');
 const modeBtn = () => document.getElementById('mode-btn');
 
-const serializer = createSerializer(document);
+// TurndownService 惰性构建：首次序列化/编辑时才创建（避免冷启动同步开销）
+let serializer = null;
+function getSerializer() {
+  if (!serializer) serializer = createSerializer(document);
+  return serializer;
+}
 
 // 当前文档状态
 let activePath = null;
@@ -110,7 +115,7 @@ function fitMermaidBox(node, svg) {
 // 同步：DOM → mdSource
 function syncSource() {
   if (!activePath) return;
-  mdSource = serializeDocument(contentInner(), serializer);
+  mdSource = serializeDocument(contentInner(), getSerializer());
 }
 
 // 串行写盘队列（防乱序）
@@ -270,7 +275,7 @@ function extractBlockMarkdown(block) {
     const table = block.querySelector('table');
     const inner = document.createElement('div');
     inner.appendChild(table.cloneNode(true));
-    const md = serializer.turndown(inner).trim();
+    const md = getSerializer().turndown(inner).trim();
     return { title: '编辑表格', initial: md, hint: 'GFM 表格语法，用 | 分隔列' };
   }
   return null;

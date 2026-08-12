@@ -7,6 +7,24 @@ const { createPathChecker } = require('./src/path-utils.js');
 
 const APP_ROOT = __dirname;
 
+// Windows 任务栏图标归属：固定 AppUserModelID，避免 portable 运行于临时目录时图标空白/分组错乱
+app.setAppUserModelId('com.lumark.app');
+
+// 单实例锁：右键"打开方式"/重复启动时，把文件转发给已有实例，而非新开进程
+const gotSingleInstanceLock = app.requestSingleInstanceLock();
+if (!gotSingleInstanceLock) app.quit();
+
+// 第二实例：把文件转发给主窗口打开，自身退出（getArgvMdPath 为函数声明，可提升引用）
+app.on('second-instance', (_event, commandLine) => {
+  const p = getArgvMdPath(commandLine);
+  const win = BrowserWindow.getAllWindows().find((w) => !w.isDestroyed());
+  if (!win) return;
+  if (win.isMinimized()) win.restore();
+  win.show();
+  win.focus();
+  if (p) deliverArgvFile(win, p);
+});
+
 // ---------------------------------------------------------------------------
 // app:// 自定义协议 —— 根治 Windows 下 file:// 的 ESM CORS / 字体路径 / mermaid ESM 问题
 // ---------------------------------------------------------------------------
@@ -34,7 +52,7 @@ function createWindow() {
     minWidth: 800,
     minHeight: 600,
     backgroundColor: '#ffffff',
-    show: false,
+    show: true, // 立即显示静态壳（工具栏/空状态），JS 初始化在后台完成，不等 ready-to-show
     // 使用原生标题栏（保留窗口边框）；标题栏颜色由 nativeTheme 跟随系统
     icon: path.join(__dirname, 'build', 'icon.ico'),
     webPreferences: {
@@ -45,7 +63,7 @@ function createWindow() {
     },
   });
 
-  win.once('ready-to-show', () => win.show());
+  // 立即显示（show:true）：首帧不阻塞在 803KB 渲染 JS 的求值上
   win.on('closed', () => releaseWindowWatchers(win)); // 关闭时释放该窗口的目录监听
   win.loadURL('app://bundle/index.html');
 
@@ -356,6 +374,49 @@ async function openDroppedPath(win, p) {
   }
 }
 
+// 从命令行参数中提取首个 .md/.markdown 路径（右键"打开方式"、或 Lumark.exe 文件.md 启动）
+function getArgvMdPath(argv) {
+  for (const raw of argv || []) {
+    if (typeof raw !== 'string' || !raw) continue;
+    const p = path.resolve(raw);
+    if (/\.(md|markdown)$/i.test(p)) return p;
+  }
+  return null;
+}
+
+// argv 打开文件：加入白名单、渲染所在目录树、再打开文件（复用 drop 事件，零 renderer 改动）
+async function openArgvFile(win, p) {
+  const abs = path.resolve(p);
+  if (!/\.(md|markdown)$/i.test(abs)) return; // 只接受 .md/.markdown
+  let st;
+  try {
+    st = await fsp.stat(abs);
+  } catch {
+    return; // 不存在：忽略
+  }
+  if (!st.isFile()) return; // 拒绝目录
+  if (win.isDestroyed()) return;
+  const root = path.dirname(abs);
+  pathChecker.addRoot(root);
+  // 防驱动根目录全盘扫描（如 C:\ 下的 md 文件）
+  let tree = null;
+  if (path.parse(root).root !== root) {
+    tree = await scanTree(root).catch(() => null);
+  }
+  if (tree && !win.isDestroyed()) win.webContents.send('drop-open-folder', { root, tree });
+  if (!win.isDestroyed()) win.webContents.send('drop-open-file', { path: abs });
+}
+
+// 传递 argv 文件：renderer 未加载完时等 did-finish-load，避免事件丢失
+function deliverArgvFile(win, p) {
+  if (win.isDestroyed()) return;
+  if (win.webContents.isLoading()) {
+    win.webContents.once('did-finish-load', () => openArgvFile(win, p));
+  } else {
+    openArgvFile(win, p);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // IPC
 // ---------------------------------------------------------------------------
@@ -543,6 +604,9 @@ const MIME = {
 };
 
 app.whenReady().then(() => {
+  // 未获得单实例锁（第二实例）：仅保留转发逻辑，不创建窗口
+  if (!gotSingleInstanceLock) return;
+
   protocol.handle('app', async (req) => {
     const url = new URL(req.url);
     let rel = decodeURIComponent(url.pathname);
@@ -567,6 +631,10 @@ app.whenReady().then(() => {
 
   const win = createWindow();
   win.setMenu(buildMenu(win));
+
+  // 首启带文件参数（右键"打开方式"）：加载完成后打开该文件
+  const pendingPath = getArgvMdPath(process.argv);
+  if (pendingPath) deliverArgvFile(win, pendingPath);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
