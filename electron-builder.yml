@@ -26,8 +26,9 @@ win:
 portable:
   artifactName: Lumark-${version}-${arch}.exe
 nsis:
-  oneClick: true
+  oneClick: false
   perMachine: false
+  allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: Lumark

@@ -17,7 +17,15 @@
 
 ## 下载
 
-从 [GitHub Releases](https://github.com/F1nSand/Lumark/releases) 下载 Windows x64 便携版 `Lumark-0.1.1-x64.exe`，下载后直接双击运行，无需安装。
+从 [GitHub Releases](https://github.com/F1nSand/Lumark/releases) 下载 Windows x64 版本。提供两种格式：
+
+| 版本 | 文件 | 说明 |
+|------|------|------|
+| **安装版（推荐）** | `Lumark-Setup-*.exe` | 安装后可选择安装目录，启动约 1 秒，带开始菜单/桌面快捷方式，适合日常使用 |
+| **便携版** | `Lumark-*.exe` | 体积小（约 88MB），免安装、绿色携带，但每次启动需解压到临时目录，约慢 8 秒 |
+
+- 日常使用建议选**安装版**：启动快、体验一致。
+- 需要绿色免安装、U 盘携带时选**便携版**：灵活，但启动慢。
 
 ## 开发
 
