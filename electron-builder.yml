@@ -20,7 +20,17 @@ win:
     - target: portable
       arch:
         - x64
+    - target: nsis
+      arch:
+        - x64
 portable:
   artifactName: Lumark-${version}-${arch}.exe
+nsis:
+  oneClick: true
+  perMachine: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Lumark
+  artifactName: Lumark-Setup-${version}.exe
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
