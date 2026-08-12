@@ -30,6 +30,11 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.on('drop-open-folder', h);
     return () => ipcRenderer.removeListener('drop-open-folder', h);
   },
+  onDropOpenFailed: (cb) => {
+    const h = (_e, path) => cb(path);
+    ipcRenderer.on('drop-open-failed', h);
+    return () => ipcRenderer.removeListener('drop-open-failed', h);
+  },
   onMenu: (cb) => {
     const h = (_e, action) => cb(action);
     ipcRenderer.on('menu', h);

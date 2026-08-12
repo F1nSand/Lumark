@@ -357,20 +357,26 @@ async function scanTree(dir, depth = 0) {
 
 // 拖拽文件/文件夹到窗口：主入口按绝对路径判断类型 → 交给 renderer 打开
 async function openDroppedPath(win, p) {
+  let st;
   try {
-    const st = await fsp.stat(p);
-    if (st.isDirectory()) {
-      const root = path.resolve(p);
-      pathChecker.addRoot(root);
-      const tree = await scanTree(root);
-      win.webContents.send('drop-open-folder', { root, tree });
-    } else if (/\.(md|markdown)$/i.test(p)) {
-      const abs = path.resolve(p);
-      pathChecker.addRoot(path.dirname(abs));
-      win.webContents.send('drop-open-file', { path: abs });
-    }
+    st = await fsp.stat(p);
   } catch {
-    // 无权限 / 不存在：忽略
+    // 文件不存在：通知 renderer 提示（避免静默失败让用户困惑）
+    if (!win.isDestroyed()) win.webContents.send('drop-open-failed', p);
+    return;
+  }
+  if (st.isDirectory()) {
+    const root = path.resolve(p);
+    pathChecker.addRoot(root);
+    const tree = await scanTree(root);
+    win.webContents.send('drop-open-folder', { root, tree });
+  } else if (/\.(md|markdown)$/i.test(p)) {
+    const abs = path.resolve(p);
+    pathChecker.addRoot(path.dirname(abs));
+    win.webContents.send('drop-open-file', { path: abs });
+  } else {
+    // 非 .md/.markdown 文件：不支持，通知提示
+    if (!win.isDestroyed()) win.webContents.send('drop-open-failed', p);
   }
 }
 

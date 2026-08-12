@@ -368,6 +368,24 @@ function bindEditEvents() {
     if (/^https?:\/\//i.test(href)) {
       e.preventDefault();
       api.openExternal(href);
+      return;
+    }
+    // .md/.markdown 相对链接：解析到当前文档同目录 → 复用拖拽打开流程（自动加白名单+打开）
+    if (/\.(md|markdown)(#|$)/i.test(href)) {
+      e.preventDefault();
+      const base = activePath ? activePath.replace(/[\\/][^\\/]*$/, '') : null;
+      if (!base) return;
+      // 拼接相对路径（支持 ./ ../），手工归一化（app:// 非文件系统，不能用 URL 解析）
+      const joined = (base.endsWith('/') ? base : base + '/') + href.split('#')[0];
+      const segs = joined.replace(/\\/g, '/').split('/');
+      const abs = segs.reduce((acc, seg) => {
+        if (seg === '' || seg === '.') return acc;
+        if (seg === '..') return acc.length ? acc.slice(0, -1) : acc; // 超出根则忽略
+        return [...acc, seg];
+      }, []).join('/');
+      if (!abs) return;
+      api.dropPath(abs);
+      return;
     }
   });
 

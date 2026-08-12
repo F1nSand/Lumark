@@ -94,6 +94,9 @@ api.onDropOpenFile(({ path }) => {
   setActivePath(path);
   openFile(path);
 });
+api.onDropOpenFailed((path) => {
+  toast('无法打开：文件不存在或不是 Markdown 文件', 'error', 4000);
+});
 
 // 测试钩子（自动化验证用）
 window.__app = {
